@@ -1,0 +1,33 @@
+plugins {
+    id 'java'
+    id 'org.hidetake.swagger.generator'
+}
+
+repositories {
+    jcenter()
+    // TODO: use snapshot version for now
+    maven { url 'https://oss.sonatype.org/content/repositories/snapshots' }
+}
+
+dependencies {
+    compile 'org.springframework.boot:spring-boot-starter-web:2.0.0.RELEASE'
+    compile 'io.swagger:swagger-annotations:1.5.10'
+    // TODO: use snapshot version for now
+    swaggerCodegen 'io.swagger:swagger-codegen-cli:3.0.0-20180313.111008-41'
+}
+
+swaggerSources {
+    petstore {
+        inputFile = file("$buildDir/petstore.yaml")
+        code {
+            language = 'spring'
+            configFile = file('config.json')
+            components = ['models', 'apis']
+        }
+        // TODO: validation is not available due to lack of JSON schema for now
+    }
+}
+
+compileJava.dependsOn swaggerSources.petstore.code
+sourceSets.main.java.srcDir "${swaggerSources.petstore.code.outputDir}/src/main/java"
+sourceSets.main.resources.srcDir "${swaggerSources.petstore.code.outputDir}/src/main/resources"

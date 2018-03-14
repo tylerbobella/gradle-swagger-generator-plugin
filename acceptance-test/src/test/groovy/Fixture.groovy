@@ -12,6 +12,8 @@ class Fixture {
     }
 
     static enum PetstoreYaml {
-        valid, invalid
+        valid,
+        invalid,
+        openapi3
     }
 }
