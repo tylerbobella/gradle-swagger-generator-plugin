@@ -1,5 +1,6 @@
 package org.hidetake.gradle.swagger.generator
 
+import groovy.util.logging.Slf4j
 import org.gradle.api.Project
 
 import java.util.concurrent.ConcurrentHashMap
@@ -9,6 +10,7 @@ import java.util.concurrent.ConcurrentHashMap
  *
  * @author Hidetake Iwata
  */
+@Slf4j
 class SwaggerCodegenExecutor {
     private static final CLASS_NAME = 'io.swagger.codegen.SwaggerCodegen'
 
@@ -32,11 +34,13 @@ class SwaggerCodegenExecutor {
      */
     private static findClass(Project project) {
         try {
+            log.debug("Finding class $CLASS_NAME from project class loader: $project.buildscript.classLoader")
             Class.forName(CLASS_NAME, true, project.buildscript.classLoader)
         } catch (ClassNotFoundException ignore) {
-            def urls = project.configurations.swaggerCodegen.collect { jar -> jar.toURI().toURL() } as URL[]
+            def urls = project.configurations.swaggerCodegen.resolve()*.toURI()*.toURL() as URL[]
+            log.debug("Finding class $CLASS_NAME from URLs: $urls")
             CLASS_CACHE.computeIfAbsent(urls) {
-                def classLoader = new URLClassLoader(urls, project.buildscript.classLoader)
+                def classLoader = new URLClassLoader(urls)
                 try {
                     Class.forName(CLASS_NAME, true, classLoader)
                 } catch (ClassNotFoundException e) {
